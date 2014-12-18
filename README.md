@@ -18,10 +18,10 @@ The first step is to create your Bot. After you've done this follow the instruct
 4. 
 
 <sup>A</sup>
-![Config-Ah-Hoc](https://www.dropbox.com/s/casemdwqhzq7ml7/config-configurations.png?dl=0)
+![Configs](http://note.io/1J8HOuu)
 
 <sup>B</sup>
-![Configs](https://www.dropbox.com/s/1fdtgbpu0kj7vm3/config-ad-hoc.png?dl=0)
+![Configs-Ad-Hoc](http://note.io/1Gv3Wx4)
 
 <sup>C</sup>
 ```xml
