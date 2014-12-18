@@ -47,8 +47,39 @@ Setting up update_version.sh
 
 ![Configs-Ad-Hoc](http://note.io/1Gv6A63)
 
-###Setting up upload.sh
+Setting up upload.sh
+====================
 
+1. In the last screen of the new Xcode Bot creation/update menu you'll have the oppertunity to add Before and After Integration Run Scripts. The first step will be to create a `Before Integration` Run Script that will be used to configure git so that it can send tags to your github repository during each build.
+2. The first thing you'll need to do is get a `Peronal Access Token` so that the Bot can push tags back to your repo. To do this open https://github.com/settings/applications and click on `Generate new token`. Unselect everything except either `repo` if your repository is private or `public_repo` if your repository is public. Copy your new personal access token and enter it in the git configuration code that is reference in the next step.
+3. From the last screen of the Xcode Bot creation/update menu click the `+ Add Trigger` button in the `Before Integration` section. When the new Run Script box appears, enter the lines from the example in <sup>E</sup> below and replace everything inside of a `<...>` tag with your appriopriate information.
+4. Now scroll down to the `After Integration` section and click the `+ Add Trigger` and enter in the lines from example <sup>F</sup>. Make sure to update all information in these lines accordingly. Please note, this assumes you've placed the `upload.sh` script in the root directory of your project. If not, You'll need to update it accordingly.
 
-<!--<sup>A</sup>-->
-<!--![Config](https://dl-web.dropbox.com/get/iOS%20Build%20Script%20Repo%20Images/config-ad-hoc.png?_subject_uid=55388810&w=AAAHLK2sgVEV7RoWz5jsFngibKTnGtvgrLtacJyzE9m-3Q)-->
+<sup>E</sup>
+
+```
+cd "$XCS_SOURCE_DIR/<YOUR-PROJECTS-ROOT-DIRECTORY-GOES-HERE>"
+git config user.email "ci@buildbox.com"
+git config user.name "Build Box"
+git config remote.origin.url "https://<YOUR-GITHUB-PERSONAL-ACCESS-TOKEN-HERE>@github.com/<YOUR-GITHUB-ACCOUNT-NAME-HERE>/<YOUR-REPO-NAME-HERE>.git"
+git config -l
+```
+
+<sup>F</sup>
+
+```
+PRODUCT_NAME="MyAwesomeApp"
+SRCROOT_MAIN_DIR="my_awesome_app"
+GITHUB_ACCOUNT="atljeremy"
+DISTRO_LIST="<YOUR-TESTFLIGHT-DISTRIBUTION-LIST-NAME-HERE>"
+TESTFLIGHT_API_TOKEN="<YOUR-TESTFLIGHT-API-TOKEN-HERE>"
+TESTFLIGHT_TEAM_TOKEN="<YOUR-TESTFLIGHT-TEAM-TOKEN-HERE>"
+SIGNING_IDENTITY="iPhone Distribution: Jeremy Fox"
+PROVISIONING_PROFILE="52bf378s-ea37-738e-djs9-shdisdisciod8ju"
+
+# Posting to HipChat is supported, if you have a HipChat room that you would like build notifications sent into, uncomment the lines below and enter in your appropriate info
+# HIPCHAT_ROOM_NAME="MyAwesomeApp Room"
+# HIP_CHAT_AUTH_TOKEN="hsishid8ew8yei8yifyri8ysyi"
+
+source "$XCS_SOURCE_DIR/$SRCROOT_MAIN_DIR/upload.sh"
+```
