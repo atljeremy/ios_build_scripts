@@ -18,12 +18,15 @@ The first step is to create your Bot. After you've done this follow the instruct
 4. 
 
 <sup>A</sup>
+------------
 ![Configs](http://note.io/1J8HOuu)
 
 <sup>B</sup>
+------------
 ![Configs-Ad-Hoc](http://note.io/1Gv3Wx4)
 
 <sup>C</sup>
+------------
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
