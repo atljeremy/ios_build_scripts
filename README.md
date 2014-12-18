@@ -10,23 +10,23 @@ First, if you are not familiar with creating Xcode Bots, please do some research
 
 The first step is to create your Bot. After you've done this follow the instructions below to setup both scipts.
 
-###Setting up update_version.sh
-
+Setting up update_version.sh
+----------------------------
 1. On your Xcode Server machine, cd into the `/Library/Developer/XcodeServer/` director and create a new folder called `Config`.
 2. Inside of the newly created `Config` folder create a new folder for each of the build configurations that you'll be using with Xcode Bots. For example, if you have an Ad Hoc and/or an Enterprise configuration in your project that you'll be using for builds make sure you create a folder with this configurations name.<sup>A</sup>
 3. For each configuration directory you created, within the directory, create a new plist file that that is named just like your projects Info.plist. For example, if the name of your project is MyAwesomeApp then your Info.list file would be named `MyAwesomeApp-Info.plist`.<sup>B</sup> You'll need to add only one `dict` within the Info.plist that will have one KVP. The key will be `CFBundleVersion` and the value will be `0`.<sup>C</sup>
 4. 
 
 <sup>A</sup>
-------------
+
 ![Configs](http://note.io/1J8HOuu)
 
 <sup>B</sup>
-------------
+
 ![Configs-Ad-Hoc](http://note.io/1Gv3Wx4)
 
 <sup>C</sup>
-------------
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
