@@ -18,10 +18,10 @@ The first step is to create your Bot. After you've done this follow the instruct
 4. 
 
 <sup>A</sup>
-![Config](https://dl-web.dropbox.com/get/iOS%20Build%20Script%20Repo%20Images/config-configurations.png?_subject_uid=55388810&w=AAAWJmR_DjvGP46qo4YN0KMEXffYGmMcdIqLSdl7qLy6Uw)
+![Config-Ah-Hoc](https://www.dropbox.com/s/casemdwqhzq7ml7/config-configurations.png?dl=0)
 
 <sup>B</sup>
-![Config](https://dl-web.dropbox.com/get/iOS%20Build%20Script%20Repo%20Images/config-ad-hoc.png?_subject_uid=55388810&w=AAAHLK2sgVEV7RoWz5jsFngibKTnGtvgrLtacJyzE9m-3Q)
+![Configs](https://www.dropbox.com/s/1fdtgbpu0kj7vm3/config-ad-hoc.png?dl=0)
 
 <sup>C</sup>
 ```xml
