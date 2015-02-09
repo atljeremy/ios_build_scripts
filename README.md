@@ -1,7 +1,7 @@
 iOS Build Scripts for Xcode Bots
 =================
 
-Build scripts that can be used to update build #, upload binary to TestFlight, and post notifications into HipChat from an Xcode Bot.
+Build scripts that can be used to update build #, upload binary to HockeyApp, and post notifications into HipChat from an Xcode Bot.
 
 How to use these scripts
 ========================
@@ -73,8 +73,7 @@ PRODUCT_NAME="MyAwesomeApp"
 SRCROOT_MAIN_DIR="my_awesome_app"
 GITHUB_ACCOUNT="atljeremy"
 DISTRO_LIST="<YOUR-TESTFLIGHT-DISTRIBUTION-LIST-NAME-HERE>"
-TESTFLIGHT_API_TOKEN="<YOUR-TESTFLIGHT-API-TOKEN-HERE>"
-TESTFLIGHT_TEAM_TOKEN="<YOUR-TESTFLIGHT-TEAM-TOKEN-HERE>"
+HOCKEYAPP_API_TOKEN="<YOUR-HOCKEYAPP-API-TOKEN-HERE>"
 SIGNING_IDENTITY="iPhone Distribution: Jeremy Fox"
 PROVISIONING_PROFILE="52bf378s-ea37-738e-djs9-shdisdisciod8ju"
 
