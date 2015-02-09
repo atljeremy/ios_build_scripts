@@ -15,8 +15,7 @@
 # HIP_CHAT_AUTH_TOKEN="hsishid8ew8yei8yifyri8ysyi"
 # GITHUB_ACCOUNT="atljeremy"
 # DISTRO_LIST="MyAwesomeApp TestFlight Distro List Name"
-# TESTFLIGHT_API_TOKEN="kahsdiuHISUhdsi8sd9oshjh_hskdihsaskdiao98asydhaisuhISL"
-# TESTFLIGHT_TEAM_TOKEN="hiuasdhfiouyhuyefijkuehwfkiuyghaksdyjfgkuyds__hsidkuh&UUHIuhdsk"
+# HOCKEYAPP_API_TOKEN="kahsdiuHISUhdsi8sd9oshjh_hskdihsaskdiao98asydhaisuhISL"
 # SIGNING_IDENTITY="iPhone Distribution: Jeremy Fox"
 # PROVISIONING_PROFILE="52bf378s-ea37-738e-djs9-shdisdisciod8ju"
 #
@@ -83,13 +82,7 @@ DISTRO_LIST=${DISTRO_LIST:="All"}
 # TestFlight api token to be used for upload request
 #
 # Set this ENV variable before calling this script or the default value will be used.
-TESTFLIGHT_API_TOKEN=${TESTFLIGHT_API_TOKEN:="NOT_DEFINED"}
-
-############################################################################
-# TestFlight team token to be used for upload request
-#
-# Set this ENV variable before calling this script or the default value will be used.
-TESTFLIGHT_TEAM_TOKEN=${TESTFLIGHT_TEAM_TOKEN:="NOT_DEFINED"}
+HOCKEYAPP_API_TOKEN=${HOCKEYAPP_API_TOKEN:="NOT_DEFINED"}
 
 ############################################################################
 # Signing Certificate used to sign the IPA
@@ -109,7 +102,7 @@ PROVISIONING_PROFILE=${PROVISIONING_PROFILE:="NOT_DEFINED"}
 ############################################################################
 
 XCODE_SERVER_DIR="/Library/Developer/XcodeServer"
-URL="http://testflightapp.com/api/builds.json"
+URL="https://rink.hockeyapp.net/api/2/apps/upload"
 PROVISIONING_PROFILE="$XCODE_SERVER_DIR/ProvisioningProfiles/${PROVISIONING_PROFILE}.mobileprovision"
 SRCROOT=${SRCROOT:="$XCS_SOURCE_DIR/$SRCROOT_MAIN_DIR/"}
 echo "SRCROOT: $SRCROOT"
@@ -154,32 +147,33 @@ echo "---------------------------------------------------"
 echo "Beginning upload with the following params... "
 echo "file: ${IPA}"
 echo "dsym: ${DSYM_ZIP}"
-echo "api_token: ${TESTFLIGHT_API_TOKEN}"
-echo "team_token: ${TESTFLIGHT_TEAM_TOKEN}"
+echo "api_token: ${HOCKEYAPP_API_TOKEN}"
 echo "distribution_lists: ${DISTRO_LIST}"
 echo "notes: ${NOTES}"
 
-# HTTP_STATUS=$(curl "${URL}" --write-out %{http_code} --silent --output /dev/null \
-#   -F file=@$IPA \
-#   -F dsym=@$DSYM_ZIP \
-#   -F api_token="${TESTFLIGHT_API_TOKEN}" \
-#   -F team_token="${TESTFLIGHT_TEAM_TOKEN}" \
-#   -F distribution_lists="${DISTRO_LIST}" \
+# HOCKEYAPP_RESPONSE=$(curl "${URL}" --write-out %{http_code} --silent --output /dev/null \
+#   -F status=2 \
+#   -F notify=1 \
 #   -F notes="${NOTES}" \
-#   -F notify=True)
+#   -F notes_type=0 \
+#   -F ipa=@$IPA \
+#   -F dsym=@$DSYM_ZIP \
+#   -F commit_sha=$SHA \
+#   -H "X-HockeyAppToken: ${HOCKEYAPP_API_TOKEN}")
 
-TESTFLIGHT_RESPONSE=$(curl "${URL}" \
-  -F file=@$IPA \
-  -F dsym=@$DSYM_ZIP \
-  -F api_token="${TESTFLIGHT_API_TOKEN}" \
-  -F team_token="${TESTFLIGHT_TEAM_TOKEN}" \
-  -F distribution_lists="${DISTRO_LIST}" \
+HOCKEYAPP_RESPONSE=$(curl "${URL}" \
+  -F status=2 \
+  -F notify=1 \
   -F notes="${NOTES}" \
-  -F notify=True)
+  -F notes_type=0 \
+  -F ipa=@$IPA \
+  -F dsym=@$DSYM_ZIP \
+  -F commit_sha=$SHA \
+  -H "X-HockeyAppToken: ${HOCKEYAPP_API_TOKEN}")
 
-echo Upload API HTTP Response: ${TESTFLIGHT_RESPONSE}
+echo Upload API HTTP Response: ${HOCKEYAPP_RESPONSE}
 
-if [ ! ${TESTFLIGHT_RESPONSE} ]; then
+if [ ! ${HOCKEYAPP_RESPONSE} ]; then
   if [ $REQUIRE_UPLOAD_SUCCESS -eq 1 ]; then
   	echo "err: app version not succesfully uploaded."
   	echo "To ignore this condition and build succesfully, add:"
@@ -201,7 +195,7 @@ else
   echo `cd ${SRCROOT}; git tag -a ${TAG_NAME} -m "${TAG_NAME}"`
   echo `cd ${SRCROOT}; git push -u --tags`
   
-  INSTALL_URL=$(echo $TESTFLIGHT_RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["install_url"]')
+  INSTALL_URL=$(echo $HOCKEYAPP_RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["public_url"]')
   GITHUB_TAG_URL="https://github.com/$GITHUB_ACCOUNT/$SRCROOT_MAIN_DIR/releases/tag/$TAG_NAME"
   POST_COLOR=${POST_COLOR:=green}
   POST_MESSAGE="<b>$XCS_BOT_NAME Bot:</b> $PRODUCT_NAME $VERSION_NUMBER ($BUILD_NUMBER) is now available! <img src='http://cdn.meme.am/images/50x50/1152667.jpg'> <br/><b>GitHub Tag:</b> <a href='$GITHUB_TAG_URL'>$GITHUB_TAG_URL</a> <br/><b>TestFlight Install URL:</b> <a href='$INSTALL_URL'>$INSTALL_URL</a> <br/><b>Build Notes:</b> ${NOTES}"
