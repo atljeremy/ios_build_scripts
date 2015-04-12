@@ -221,7 +221,7 @@ if [ "NOT_DEFINED" != $HOCKEY_API_TOKEN ]; then
   fi
 fi
 
-if [ "NOT_DEFINED" != $CRASHLYTICS_API_TOKEN ]; then
+if [ $CRASHLYTICS_API_TOKEN != "NOT_DEFINED" ]; then
   echo $NOTES | tee /tmp/ReleaseNotes.txt
   $CRASHLYTICS_FRAMEWORK_DIRECTORY/Crashlytics.framework/submit $CRASHLYTICS_API_TOKEN CRASHLYTICS_BUILD_SECRET -ipaPath $IPA -emails $CRASHLYTICS_EMAILS -notesPath /tmp/ReleaseNotes.txt -groupAliases ﻿$CRASHLYTICS_GROUP_ALIASES
 fi
