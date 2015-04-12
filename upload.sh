@@ -79,10 +79,34 @@ GITHUB_ACCOUNT=${GITHUB_ACCOUNT:="NOT_DEFINED"}
 DISTRO_LIST=${DISTRO_LIST:="All"}
 
 ############################################################################
-# TestFlight api token to be used for upload request
+# HockeyApp api token to be used for upload request
 #
 # Set this ENV variable before calling this script or the default value will be used.
 HOCKEYAPP_API_TOKEN=${HOCKEYAPP_API_TOKEN:="NOT_DEFINED"}
+
+############################################################################
+# Crashlytics api token to be used for upload request
+#
+# Set this ENV variable before calling this script or the default value will be used.
+CRASHLYTICS_API_TOKEN=${CRASHLYTICS_API_TOKEN:="NOT_DEFINED"}
+
+############################################################################
+# Crashlytics build secret to be used for upload request
+#
+# Set this ENV variable before calling this script or the default value will be used.
+CRASHLYTICS_BUILD_SECRET=${CRASHLYTICS_BUILD_SECRET:="NOT_DEFINED"}
+
+############################################################################
+# Crashlytics emails to be used for upload request
+#
+# Set this ENV variable before calling this script or the default value will be used.
+CRASHLYTICS_EMAILS=${CRASHLYTICS_EMAILS:=""}
+
+############################################################################
+# Crashlytics group aliases to be used for upload request
+#
+# Set this ENV variable before calling this script or the default value will be used.
+CRASHLYTICS_GROUP_ALIASES=${CRASHLYTICS_GROUP_ALIASES:=""}
 
 ############################################################################
 # Signing Certificate used to sign the IPA
@@ -95,6 +119,12 @@ SIGNING_IDENTITY=${SIGNING_IDENTITY:="NOT_DEFINED"}
 #
 # Set this ENV variable before calling this script or the default value will be used.
 PROVISIONING_PROFILE=${PROVISIONING_PROFILE:="NOT_DEFINED"}
+
+############################################################################
+# used to tell the build system to create and send a tag into Github
+#
+# Set this ENV variable before calling this script or the default value will be used.
+TAG_BUILD=${TAG_BUILD:=0}
 
 
 ############################################################################
@@ -151,6 +181,10 @@ echo "api_token: ${HOCKEYAPP_API_TOKEN}"
 echo "distribution_lists: ${DISTRO_LIST}"
 echo "notes: ${NOTES}"
 
+UPLOAD_SUCCESS=0
+INSTALL_URL="Unkown"
+
+if [ "NOT_DEFINED" != $HOCKEY_API_TOKEN ]; then
 # HOCKEYAPP_RESPONSE=$(curl "${URL}" --write-out %{http_code} --silent --output /dev/null \
 #   -F status=2 \
 #   -F notify=1 \
@@ -161,19 +195,30 @@ echo "notes: ${NOTES}"
 #   -F commit_sha=$SHA \
 #   -H "X-HockeyAppToken: ${HOCKEYAPP_API_TOKEN}")
 
-HOCKEYAPP_RESPONSE=$(curl "${URL}" \
-  -F status=2 \
-  -F notify=1 \
-  -F notes="${NOTES}" \
-  -F notes_type=0 \
-  -F ipa=@$IPA \
-  -F dsym=@$DSYM_ZIP \
-  -F commit_sha=$SHA \
-  -H "X-HockeyAppToken: ${HOCKEYAPP_API_TOKEN}")
+  HOCKEYAPP_RESPONSE=$(curl "${URL}" \
+    -F status=2 \
+    -F notify=1 \
+    -F notes="${NOTES}" \
+    -F notes_type=0 \
+    -F ipa=@$IPA \
+    -F dsym=@$DSYM_ZIP \
+    -F commit_sha=$SHA \
+    -H "X-HockeyAppToken: ${HOCKEYAPP_API_TOKEN}")
 
-echo Upload API HTTP Response: ${HOCKEYAPP_RESPONSE}
+  echo Upload API HTTP Response: ${HOCKEYAPP_RESPONSE}
 
-if [ ! ${HOCKEYAPP_RESPONSE} ]; then
+  if [ $HOCKEYAPP_RESPONSE ]; then
+    UPLOAD_SUCCESS=1
+    INSTALL_URL=$(echo $HOCKEYAPP_RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["public_url"]')
+  fi
+fi
+
+if [ "NOT_DEFINED" != $CRASHLYTICS_API_TOKEN ]; then
+  echo $NOTES | tee /tmp/ReleaseNotes.txt
+  $SRCROOT/Crashlytics.framework/submit $CRASHLYTICS_API_TOKEN CRASHLYTICS_BUILD_SECRET -ipaPath $IPA -emails $CRASHLYTICS_EMAILS -notesPath /tmp/ReleaseNotes.txt -groupAliases ﻿$CRASHLYTICS_GROUP_ALIASES
+fi
+
+if [ UPLOAD_SUCCESS -eq 0 ]; then
   if [ $REQUIRE_UPLOAD_SUCCESS -eq 1 ]; then
   	echo "err: app version not succesfully uploaded."
   	echo "To ignore this condition and build succesfully, add:"
@@ -190,15 +235,17 @@ else
   BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "${APP}/Info.plist")
   BOT_NAME=$(echo $XCS_BOT_NAME | tr -d [[:space:]])
   TAG_NAME="${BOT_NAME}-${VERSION_NUMBER}-${BUILD_NUMBER}"
-  
-  echo "Tagging release as '${TAG_NAME}'"
-  echo `cd ${SRCROOT}; git tag -a ${TAG_NAME} -m "${TAG_NAME}"`
-  echo `cd ${SRCROOT}; git push -u --tags`
-  
-  INSTALL_URL=$(echo $HOCKEYAPP_RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["public_url"]')
-  GITHUB_TAG_URL="https://github.com/$GITHUB_ACCOUNT/$SRCROOT_MAIN_DIR/releases/tag/$TAG_NAME"
   POST_COLOR=${POST_COLOR:=green}
-  POST_MESSAGE="<b>$XCS_BOT_NAME Bot:</b> $PRODUCT_NAME $VERSION_NUMBER ($BUILD_NUMBER) is now available! <img src='http://cdn.meme.am/images/50x50/1152667.jpg'> <br/><b>GitHub Tag:</b> <a href='$GITHUB_TAG_URL'>$GITHUB_TAG_URL</a> <br/><b>TestFlight Install URL:</b> <a href='$INSTALL_URL'>$INSTALL_URL</a> <br/><b>Build Notes:</b> ${NOTES}"
+  GITHUB_TAG_URL=""
+  POST_MESSAGE="<b>$XCS_BOT_NAME Bot:</b> $PRODUCT_NAME $VERSION_NUMBER ($BUILD_NUMBER) is now available! <img src='http://cdn.meme.am/images/50x50/1152667.jpg'> <br/><b>TestFlight Install URL:</b> <a href='$INSTALL_URL'>$INSTALL_URL</a> <br/><b>Build Notes:</b> ${NOTES}"
+
+  if [ $TAG_BUILD -eq 1 ]; then
+    echo "Tagging release as '${TAG_NAME}'"
+    echo `cd ${SRCROOT}; git tag -a ${TAG_NAME} -m "${TAG_NAME}"`
+    echo `cd ${SRCROOT}; git push -u --tags`
+    GITHUB_TAG_URL="https://github.com/$GITHUB_ACCOUNT/$SRCROOT_MAIN_DIR/releases/tag/$TAG_NAME"
+    POST_MESSAGE="<b>$XCS_BOT_NAME Bot:</b> $PRODUCT_NAME $VERSION_NUMBER ($BUILD_NUMBER) is now available! <img src='http://cdn.meme.am/images/50x50/1152667.jpg'> <br/><b>GitHub Tag:</b> <a href='$GITHUB_TAG_URL'>$GITHUB_TAG_URL</a> <br/><b>TestFlight Install URL:</b> <a href='$INSTALL_URL'>$INSTALL_URL</a> <br/><b>Build Notes:</b> ${NOTES}"
+  fi
 
   if [ $NOTIFY_HIPCHAT_ROOM -eq 1 ]; then
     HIPCHAT_ROOM_NAME=$(perl -MURI::Escape -e 'print uri_escape shift, , q{^A-Za-z0-9\-._~/:}' -- "$HIPCHAT_ROOM_NAME")
