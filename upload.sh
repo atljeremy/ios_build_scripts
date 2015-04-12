@@ -192,7 +192,7 @@ echo "notes: ${NOTES}"
 UPLOAD_SUCCESS=0
 INSTALL_URL="Unkown"
 
-if [ "NOT_DEFINED" != $HOCKEY_API_TOKEN ]; then
+if [ $HOCKEY_API_TOKEN != "NOT_DEFINED" ]; then
 # HOCKEYAPP_RESPONSE=$(curl "${URL}" --write-out %{http_code} --silent --output /dev/null \
 #   -F status=2 \
 #   -F notify=1 \
@@ -223,7 +223,7 @@ fi
 
 if [ $CRASHLYTICS_API_TOKEN != "NOT_DEFINED" ]; then
   echo $NOTES | tee /tmp/ReleaseNotes.txt
-  $CRASHLYTICS_FRAMEWORK_DIRECTORY/Crashlytics.framework/submit $CRASHLYTICS_API_TOKEN CRASHLYTICS_BUILD_SECRET -ipaPath $IPA -emails $CRASHLYTICS_EMAILS -notesPath /tmp/ReleaseNotes.txt -groupAliases ﻿$CRASHLYTICS_GROUP_ALIASES
+  $CRASHLYTICS_FRAMEWORK_DIRECTORY/Crashlytics.framework/submit $CRASHLYTICS_API_TOKEN $CRASHLYTICS_BUILD_SECRET -ipaPath $IPA -emails $CRASHLYTICS_EMAILS -notesPath /tmp/ReleaseNotes.txt -groupAliases ﻿$CRASHLYTICS_GROUP_ALIASES
 fi
 
 if [ UPLOAD_SUCCESS -eq 0 ]; then
