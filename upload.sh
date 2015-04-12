@@ -109,6 +109,14 @@ CRASHLYTICS_EMAILS=${CRASHLYTICS_EMAILS:=""}
 CRASHLYTICS_GROUP_ALIASES=${CRASHLYTICS_GROUP_ALIASES:=""}
 
 ############################################################################
+# Crashlytics.framework path relative to SRCROOT (defined on line 143 *DO
+# NOT CHANGE SRCROOT*) to be used for upload request. This is the directory
+# that contains the Crashlyitics.framework.
+#
+# Set this ENV variable before calling this script or the default value will be used.
+CRASHLYTICS_FRAMEWORK_DIRECTORY=${CRASHLYTICS_FRAMEWORK_DIRECTORY:=""}
+
+############################################################################
 # Signing Certificate used to sign the IPA
 #
 # Set this ENV variable before calling this script or the default value will be used.
@@ -215,7 +223,7 @@ fi
 
 if [ "NOT_DEFINED" != $CRASHLYTICS_API_TOKEN ]; then
   echo $NOTES | tee /tmp/ReleaseNotes.txt
-  $SRCROOT/Crashlytics.framework/submit $CRASHLYTICS_API_TOKEN CRASHLYTICS_BUILD_SECRET -ipaPath $IPA -emails $CRASHLYTICS_EMAILS -notesPath /tmp/ReleaseNotes.txt -groupAliases ﻿$CRASHLYTICS_GROUP_ALIASES
+  $CRASHLYTICS_FRAMEWORK_DIRECTORY/Crashlytics.framework/submit $CRASHLYTICS_API_TOKEN CRASHLYTICS_BUILD_SECRET -ipaPath $IPA -emails $CRASHLYTICS_EMAILS -notesPath /tmp/ReleaseNotes.txt -groupAliases ﻿$CRASHLYTICS_GROUP_ALIASES
 fi
 
 if [ UPLOAD_SUCCESS -eq 0 ]; then
