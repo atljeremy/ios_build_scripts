@@ -15,6 +15,12 @@
 TRACKING_PLIST_PATH=${TRACKING_PLIST_PATH:="/Library/Developer/XcodeServer/Config/$CONFIGURATION"}
 
 ############################################################################
+# Used to tell the build system where to find the projects info.plist file
+#
+# Set this ENV variable before calling this script or default value will be used.
+PROJ_PLIST=${PROJ_PLIST:="${XCS_SOURCE_DIR}/${PROJECT_NAME}/${PROJECT_NAME}-Info.plist"}
+
+############################################################################
 # Used to tell the build system if it should upload the new version to source sontrol
 #
 # Set this ENV variable before calling this script or default value will be used.
@@ -25,7 +31,6 @@ COMMIT_VERSION=${COMMIT_VERSION:=0}
 ############################################################################
 
 echo "Bumping build number..."
-PROJ_PLIST="${PROJECT_DIR}/${PROJECT_NAME}/${PROJECT_NAME}-Info.plist"
 echo "PROJECT PLIST FILE: $PROJ_PLIST"
 PLIST="$TRACKING_PLIST_PATH/${PROJECT_NAME}-Info.plist"
 echo "PLIST FILE: $PLIST"
@@ -33,8 +38,8 @@ echo "PLIST FILE: $PLIST"
 # increment the build number
 BUNDLE_VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion" "${PLIST}")
 if [[ "${BUNDLE_VERSION}" == "" ]]; then
-echo "No build number in $plist"
-exit 2
+  echo "No build number in $plist"
+  exit 2
 fi
 
 IFS='.' read -a BUNDLE_PARTS <<< "$BUNDLE_VERSION"
