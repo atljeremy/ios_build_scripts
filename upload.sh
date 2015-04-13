@@ -82,19 +82,19 @@ DISTRO_LIST=${DISTRO_LIST:="All"}
 # HockeyApp api token to be used for upload request
 #
 # Set this ENV variable before calling this script or the default value will be used.
-HOCKEYAPP_API_TOKEN=${HOCKEYAPP_API_TOKEN:="NOT_DEFINED"}
+HOCKEYAPP_API_TOKEN=${HOCKEYAPP_API_TOKEN:=""}
 
 ############################################################################
 # Crashlytics api token to be used for upload request
 #
 # Set this ENV variable before calling this script or the default value will be used.
-CRASHLYTICS_API_TOKEN=${CRASHLYTICS_API_TOKEN:="NOT_DEFINED"}
+CRASHLYTICS_API_TOKEN=${CRASHLYTICS_API_TOKEN:=""}
 
 ############################################################################
 # Crashlytics build secret to be used for upload request
 #
 # Set this ENV variable before calling this script or the default value will be used.
-CRASHLYTICS_BUILD_SECRET=${CRASHLYTICS_BUILD_SECRET:="NOT_DEFINED"}
+CRASHLYTICS_BUILD_SECRET=${CRASHLYTICS_BUILD_SECRET:=""}
 
 ############################################################################
 # Crashlytics emails to be used for upload request
@@ -192,7 +192,7 @@ echo "notes: ${NOTES}"
 UPLOAD_SUCCESS=0
 INSTALL_URL="Unkown"
 
-if [ "$HOCKEY_API_TOKEN" != "NOT_DEFINED" ]; then
+if [[ -n $HOCKEY_API_TOKEN ]]; then
 # HOCKEYAPP_RESPONSE=$(curl "${URL}" --write-out %{http_code} --silent --output /dev/null \
 #   -F status=2 \
 #   -F notify=1 \
@@ -221,12 +221,16 @@ if [ "$HOCKEY_API_TOKEN" != "NOT_DEFINED" ]; then
   fi
 fi
 
-if [ "$CRASHLYTICS_API_TOKEN" != "NOT_DEFINED" ]; then
+if [[ -n $CRASHLYTICS_API_TOKEN ]]; then
   echo $NOTES | tee /tmp/ReleaseNotes.txt
-  $CRASHLYTICS_FRAMEWORK_DIRECTORY/Crashlytics.framework/submit $CRASHLYTICS_API_TOKEN $CRASHLYTICS_BUILD_SECRET -ipaPath $IPA -emails $CRASHLYTICS_EMAILS -notesPath /tmp/ReleaseNotes.txt -groupAliases ﻿$CRASHLYTICS_GROUP_ALIASES
+  if [[ -n $CRASHLYTICS_EMAILS ]]; then
+    $CRASHLYTICS_FRAMEWORK_DIRECTORY/Crashlytics.framework/submit $CRASHLYTICS_API_TOKEN $CRASHLYTICS_BUILD_SECRET -ipaPath $IPA -emails $CRASHLYTICS_EMAILS -notesPath /tmp/ReleaseNotes.txt -notifications "YES"
+  elif [[ -n $CRASHLYTICS_GROUP_ALIASES ]]; then
+    $CRASHLYTICS_FRAMEWORK_DIRECTORY/Crashlytics.framework/submit $CRASHLYTICS_API_TOKEN $CRASHLYTICS_BUILD_SECRET -ipaPath $IPA -notesPath /tmp/ReleaseNotes.txt -groupAliases ﻿$CRASHLYTICS_GROUP_ALIASES -notifications "YES"
+  fi
 fi
 
-if [ UPLOAD_SUCCESS -eq 0 ]; then
+if [ $UPLOAD_SUCCESS -eq 0 ]; then
   if [ $REQUIRE_UPLOAD_SUCCESS -eq 1 ]; then
   	echo "err: app version not succesfully uploaded."
   	echo "To ignore this condition and build succesfully, add:"
