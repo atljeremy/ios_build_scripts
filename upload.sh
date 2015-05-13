@@ -192,7 +192,7 @@ echo "notes: ${NOTES}"
 UPLOAD_SUCCESS=0
 INSTALL_URL="Unkown"
 
-if [[ -n $HOCKEY_API_TOKEN ]]; then
+if [[ -n $HOCKEYAPP_API_TOKEN ]]; then
 # HOCKEYAPP_RESPONSE=$(curl "${URL}" --write-out %{http_code} --silent --output /dev/null \
 #   -F status=2 \
 #   -F notify=1 \
