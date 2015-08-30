@@ -46,6 +46,20 @@ HIPCHAT_ROOM_NAME=${HIPCHAT_ROOM_NAME:="NOT_DEFINED"}
 NOTIFY_HIPCHAT_ROOM=${NOTIFY_HIPCHAT_ROOM:=1}
 
 ############################################################################
+# Used to tell this script to notify Slack based on the Slack incoming web
+# service URL specified in the SLACK_INCOMING_WEBSERVICE_URL.
+#
+# Set this ENV variable before calling this script or the default value will be used.
+NOTIFY_SLACK_ROOM=${NOTIFY_SLACK_ROOM:=1}
+
+############################################################################
+# Used to tell this script what Slack incoming web service URL to use for 
+# sending messages into Slack.
+#
+# Set this ENV variable before calling this script or the default value will be used.
+SLACK_INCOMING_WEBSERVICE_URL=${SLACK_INCOMING_WEBSERVICE_URL:="NOT_DEFINED"}
+
+############################################################################
 # Used to tell the build system if members of the HIPCHAT_ROOM_NAME should receive
 # a notification when the build system posts a build notificaiton
 #
@@ -228,6 +242,7 @@ if [[ -n $CRASHLYTICS_API_TOKEN ]]; then
   elif [[ -n $CRASHLYTICS_GROUP_ALIASES ]]; then
     $CRASHLYTICS_FRAMEWORK_DIRECTORY/Crashlytics.framework/submit $CRASHLYTICS_API_TOKEN $CRASHLYTICS_BUILD_SECRET -ipaPath $IPA -notesPath /tmp/ReleaseNotes.txt -groupAliases ﻿$CRASHLYTICS_GROUP_ALIASES -notifications "YES"
   fi
+  UPLOAD_SUCCESS=1
 fi
 
 if [ $UPLOAD_SUCCESS -eq 0 ]; then
@@ -250,6 +265,7 @@ else
   POST_COLOR=${POST_COLOR:=green}
   GITHUB_TAG_URL=""
   POST_MESSAGE="<b>$XCS_BOT_NAME Bot:</b> $PRODUCT_NAME $VERSION_NUMBER ($BUILD_NUMBER) is now available! <img src='http://cdn.meme.am/images/50x50/1152667.jpg'> <br/><b>TestFlight Install URL:</b> <a href='$INSTALL_URL'>$INSTALL_URL</a> <br/><b>Build Notes:</b> ${NOTES}"
+  SLACK_MESSAGE="<https://fabric.io/lawntap/ios/apps/com.lawntap.partner/beta/releases/7914608552dc0eda775fe37b0cf0e06f0d50d606?build_version=$BUILD_NUMBER&display_version=$VERSION_NUMBER|$PRODUCT_NAME $VERSION_NUMBER ($BUILD_NUMBER)> is now available! \nBuild Notes: ${NOTES}"
 
   if [ $TAG_BUILD -eq 1 ]; then
     echo "Tagging release as '${TAG_NAME}'"
@@ -269,6 +285,18 @@ else
       echo "With message: $POST_MESSAGE"
       HTTP_STATUS=$(curl -H "Content-Type: application/json" -d '{"color":"'"$POST_COLOR"'", "message":"'"$POST_MESSAGE"'", "notify":'"$POST_NOTIFY"'}' "https://api.hipchat.com/v2/room/${HIPCHAT_ROOM_NAME}/notification?auth_token=$HIP_CHAT_AUTH_TOKEN" --write-out %{http_code} --silent --output /dev/null)
       echo "Finished notifying HipChat room with response code: $HTTP_STATUS"
+    fi
+  fi
+  
+  if [ $NOTIFY_SLACK_ROOM -eq 1 ]; then
+    if [ ! $SLACK_INCOMING_WEBSERVICE_URL ]; then
+      echo "NOTIFY_SLACK_ROOM is set to 1 (true) but SLACK_INCOMING_WEBSERVICE_URL is not set. Can't notify Slack of build without a valid SLACK_INCOMING_WEBSERVICE_URL."
+      exit 1;
+    else
+      echo "Posting notification to Slack using incoming webservice hook URL: $SLACK_INCOMING_WEBSERVICE_URL"
+      echo "With message: $SLACK_MESSAGE"
+      HTTP_STATUS=$(curl -H "Content-Type: application/json" -d '{"text": "'"$SLACK_MESSAGE"'","channel": "#general", "username": "buildbot", "icon_emoji": ":leaf:"}' "$SLACK_INCOMING_WEBSERVICE_URL" --write-out %{http_code} --silent --output /dev/null)
+      echo "Finished notifying Slack room with response code: $HTTP_STATUS"
     fi
   fi
 fi
