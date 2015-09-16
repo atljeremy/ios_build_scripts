@@ -163,7 +163,7 @@ SHA=`cd ${SRCROOT}; git rev-parse HEAD`
 DSYM="/tmp/Archive.xcarchive/dSYMs/${PRODUCT_NAME}.app.dSYM"
 DSYM_ZIP="${DSYM}.zip"
 IPA="/tmp/${PRODUCT_NAME}.ipa"
-APP="/tmp/Archive.xcarchive/Products/Applications/${PRODUCT_NAME}.app"
+APP="/tmp/${PRODUCT_NAME}.xcarchive/Products/Applications/${PRODUCT_NAME}.app"
  
 # Clear out any old copies of the Archive
 echo "---------------------------------------------------"
@@ -175,6 +175,7 @@ echo "---------------------------------------------------"
 # Copy over the latest build the bot just created
 echo "---------------------------------------------------"
 echo "Copying latest app to /tmp/...";
+echo "ARCHIVE: $XCS_ARCHIVE"
 /bin/cp -Rp "$XCS_ARCHIVE" "/tmp/"
 echo "Done copying latest app to /tmp/";
 echo "---------------------------------------------------"
@@ -238,9 +239,9 @@ fi
 if [[ -n $CRASHLYTICS_API_TOKEN ]]; then
   echo $NOTES | tee /tmp/ReleaseNotes.txt
   if [[ -n $CRASHLYTICS_EMAILS ]]; then
-    $CRASHLYTICS_FRAMEWORK_DIRECTORY/Crashlytics.framework/submit $CRASHLYTICS_API_TOKEN $CRASHLYTICS_BUILD_SECRET -ipaPath $IPA -emails $CRASHLYTICS_EMAILS -notesPath /tmp/ReleaseNotes.txt -notifications "YES"
+    $CRASHLYTICS_FRAMEWORK_DIRECTORY/Crashlytics.framework/submit $CRASHLYTICS_API_TOKEN $CRASHLYTICS_BUILD_SECRET -ipaPath "$IPA" -emails $CRASHLYTICS_EMAILS -notesPath /tmp/ReleaseNotes.txt -notifications "YES"
   elif [[ -n $CRASHLYTICS_GROUP_ALIASES ]]; then
-    $CRASHLYTICS_FRAMEWORK_DIRECTORY/Crashlytics.framework/submit $CRASHLYTICS_API_TOKEN $CRASHLYTICS_BUILD_SECRET -ipaPath $IPA -notesPath /tmp/ReleaseNotes.txt -groupAliases ﻿$CRASHLYTICS_GROUP_ALIASES -notifications "YES"
+    $CRASHLYTICS_FRAMEWORK_DIRECTORY/Crashlytics.framework/submit $CRASHLYTICS_API_TOKEN $CRASHLYTICS_BUILD_SECRET -ipaPath "$IPA" -notesPath /tmp/ReleaseNotes.txt -groupAliases ﻿$CRASHLYTICS_GROUP_ALIASES -notifications "YES"
   fi
   UPLOAD_SUCCESS=1
 fi
